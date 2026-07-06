@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Autocrafts Cashflow System</title>
+<style>
+*{box-sizing:border-box;font-family:Arial,sans-serif}
+body{margin:0;background:linear-gradient(135deg,#eef4f8,#fff7e6);color:#1d2630}
+.mobile-header{display:none;background:linear-gradient(135deg,#111827,#2f87a8);color:white;padding:14px 18px;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1000}
+.menu-toggle{background:#f6c76b;color:#111827;border:none;padding:9px 14px;border-radius:10px;font-size:22px;font-weight:bold;cursor:pointer}
+.overlay{display:none}.app{display:flex;min-height:100vh}
+.sidebar{width:270px;background:linear-gradient(180deg,#0f172a,#111827,#1e293b);color:white;padding:20px;flex-shrink:0;transition:.3s}
+.logo{text-align:center;margin-bottom:25px}.logo img{width:160px;max-width:100%;border-radius:14px}.logo h3{margin:10px 0 0;color:#f6c76b}
+.menu button,.submenu button{width:100%;padding:13px;margin-bottom:8px;border:none;border-radius:10px;background:transparent;color:white;text-align:left;cursor:pointer;font-size:15px}
+.menu button:hover,.menu button.active,.submenu button:hover,.submenu button.active{background:linear-gradient(135deg,#2f87a8,#38bdf8)}
+.submenu{display:none;margin-left:15px}
+.main{flex:1;padding:25px;min-width:0}
+.topbar,.section,.card,.search-box{background:white;border-radius:16px;box-shadow:0 8px 22px rgba(0,0,0,.08)}
+.topbar{padding:18px 22px;margin-bottom:20px;border-left:6px solid #f6c76b}.topbar h1{margin:0;color:#111827}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:20px}
+.expense-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:20px}
+.card{padding:20px;border-top:5px solid #2f87a8}.cards .card:nth-child(1){border-top-color:#22c55e}.cards .card:nth-child(2){border-top-color:#ef4444}.cards .card:nth-child(3){border-top-color:#2f87a8}
+.card h3{margin:0 0 10px;color:#555;font-size:15px}.card p{margin:0;font-size:24px;font-weight:bold}
+.income{color:#16a34a}.expense{color:#dc2626}.revenue{color:#2f87a8}
+.stocks-card{color:#b07a2a}.logistics-card{color:#0ea5e9}.misc-card{color:#f59e0b}.personal-card{color:#ec4899}.wages-card{color:#10b981}.loans-card{color:#ef4444}.taxes-card{color:#6366f1}.giving-card{color:#14b8a6}
+.search-box{padding:15px;margin-bottom:20px}.search-box input{width:100%;padding:13px;border:1px solid #ccc;border-radius:10px}
+.section{display:none;padding:22px}.section.active{display:block}h2{margin-top:0;color:#111827}
+table{width:100%;border-collapse:collapse;margin-top:15px;font-size:14px}th,td{border:1px solid #ddd;padding:10px;text-align:center}th{background:#111827;color:#f6c76b}
+input{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px}
+.btn{padding:11px 18px;border:none;border-radius:10px;background:linear-gradient(135deg,#111827,#2f87a8);color:white;font-weight:bold;cursor:pointer;margin-top:15px;margin-right:6px}
+.btn-red{background:linear-gradient(135deg,#dc2626,#ef4444)}.btn-green{background:linear-gradient(135deg,#16a34a,#22c55e)}
+.total-box{margin-top:15px;font-weight:bold;font-size:17px;color:#111}#reportArea,#searchResults{margin-top:20px}
+@media(max-width:1024px){.sidebar{width:240px}.cards{grid-template-columns:repeat(2,1fr)}.expense-cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){.mobile-header{display:flex}.app{flex-direction:row}.sidebar{position:fixed;top:0;left:-290px;height:100vh;width:270px;z-index:1100;overflow-y:auto}.sidebar.open{left:0}.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1050}.overlay.show{display:block}.main{width:100%;padding:15px}.topbar{display:none}.cards,.expense-cards{grid-template-columns:1fr}.card{padding:16px}.card p{font-size:22px}table{display:block;overflow-x:auto;white-space:nowrap}.btn{width:100%;margin-right:0}}
+@media(max-width:480px){.section{padding:15px}.menu button,.submenu button{font-size:14px;padding:11px}input{font-size:14px}th,td{padding:8px;font-size:13px}}
+</style>
+</head>
+<body>
+
+<div class="mobile-header"><button class="menu-toggle" onclick="toggleSidebar()">☰</button><strong>Autocrafts Cashflow</strong></div>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<datalist id="paymentMethods">
+<option value="Cash">
+<option value="GCash">
+<option value="Bank Transfer">
+</datalist>
+
+<div class="app">
+<aside class="sidebar">
+<div class="logo"><img src="logo.jpg" alt="Autocrafts Logo"><h3>Cashflow System</h3></div>
+
+<div class="menu">
+<button class="active" onclick="showSection('dashboard',this)">Dashboard</button>
+
+<button onclick="toggleMenu('incomeMenu')">Income ▼</button>
+<div class="submenu" id="incomeMenu">
+<button onclick="showIncome('Autocrafts Shopee',this)">Autocrafts Shopee</button>
+<button onclick="showIncome('Autocrafts Lazada',this)">Autocrafts Lazada</button>
+<button onclick="showIncome('Dakz Shopee',this)">Dakz Shopee</button>
+<button onclick="showIncome('Dakz Lazada',this)">Dakz Lazada</button>
+<button onclick="showIncome('Same Day',this)">Same Day</button>
+</div>
+
+<button onclick="toggleMenu('expenseMenu')">Expenses ▼</button>
+<div class="submenu" id="expenseMenu">
+<button onclick="showExpense('Stocks Expenses',this)">Stocks</button>
+<button onclick="showExpense('Logistics Expenses',this)">Logistics</button>
+<button onclick="showExpense('Miscellaneous',this)">Miscellaneous</button>
+<button onclick="showExpense('Personal',this)">Personal</button>
+<button onclick="showExpense('Wages',this)">Wages</button>
+<button onclick="showExpense('Loans',this)">Loans</button>
+<button onclick="showExpense('Taxes',this)">Taxes</button>
+<button onclick="showExpense('Giving',this)">Giving</button>
+</div>
+
+<button onclick="showSection('recordsSection',this)">Records / Reports</button>
+</div>
+</aside>
+
+<main class="main">
+<div class="topbar"><h1>Autocrafts Cashflow System</h1></div>
+
+<div class="search-box">
+<label><strong>Encoding / Record Date</strong></label>
+<input type="date" id="recordDate" onchange="handleDataChange()">
+</div>
+
+<div class="cards">
+<div class="card"><h3>Total Income</h3><p class="income" id="totalIncome">₱0.00</p></div>
+<div class="card"><h3>Grand Total Expenses</h3><p class="expense" id="totalExpenses">₱0.00</p></div>
+<div class="card"><h3>Net Revenue</h3><p class="revenue" id="revenue">₱0.00</p></div>
+</div>
+
+<div class="expense-cards">
+<div class="card"><h3>Total Stocks</h3><p class="stocks-card" id="stocksCard">₱0.00</p></div>
+<div class="card"><h3>Total Logistics</h3><p class="logistics-card" id="logisticsCard">₱0.00</p></div>
+<div class="card"><h3>Total Misc</h3><p class="misc-card" id="miscCard">₱0.00</p></div>
+<div class="card"><h3>Total Personal</h3><p class="personal-card" id="personalCard">₱0.00</p></div>
+<div class="card"><h3>Total Wages</h3><p class="wages-card" id="wagesCard">₱0.00</p></div>
+<div class="card"><h3>Total Loans</h3><p class="loans-card" id="loansCard">₱0.00</p></div>
+<div class="card"><h3>Total Taxes</h3><p class="taxes-card" id="taxesCard">₱0.00</p></div>
+<div class="card"><h3>Total Giving</h3><p class="giving-card" id="givingCard">₱0.00</p></div>
+</div>
+
+<div class="search-box"><input type="text" id="searchInput" placeholder="Search income, expenses, or payment method..." oninput="searchItems()"></div>
+<div id="searchResults"></div>
+
+<section id="dashboard" class="section active">
+<h2>Dashboard</h2>
+<p>Welcome to your Autocrafts cashflow system.</p>
+<p><strong>AutoSave:</strong> Your entries are automatically saved on this browser/device.</p>
+<p><strong>Manual Date:</strong> Choose the Encoding / Record Date before saving a record.</p>
+</section>
+
+<div id="incomeSections"></div>
+<div id="expenseSections"></div>
+
+<section id="recordsSection" class="section">
+<h2>Records / Reports</h2>
+<button class="btn" onclick="saveRecord()">Save Current Record</button>
+<button class="btn btn-green" onclick="generateReport()">Generate Report</button>
+<button class="btn btn-green" onclick="exportToExcel()">Export to Excel</button>
+<button class="btn" onclick="printReport()">Print Report</button>
+<button class="btn btn-red" onclick="clearRecords()">Clear Records</button>
+<button class="btn btn-red" onclick="clearAutoSavedData()">Clear AutoSaved Inputs</button>
+
+<h3>Saved Records</h3>
+<table>
+<thead><tr><th>Date</th><th>Total Income</th><th>Grand Total Expenses</th><th>Net Revenue</th></tr></thead>
+<tbody id="records"></tbody>
+</table>
+<div id="reportArea"></div>
+</section>
+</main>
+</div>
+
+<script>
+const incomeCategories=["Autocrafts Shopee","Autocrafts Lazada","Dakz Shopee","Dakz Lazada","Same Day"];
+const expenseCategories=["Stocks Expenses","Logistics Expenses","Miscellaneous","Personal","Wages","Loans","Taxes","Giving"];
+const qtyExpenseCategories=["Stocks Expenses","Logistics Expenses"];
+let isLoadingData=false;
+
+function getId(name){return name.toLowerCase().replaceAll(" ","")}
+function formatPeso(amount){return "₱"+amount.toLocaleString("en-PH",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function isSameDayCategoryId(id){return id===getId("Same Day")}
+
+function toggleSidebar(){document.querySelector(".sidebar").classList.toggle("open");document.getElementById("overlay").classList.toggle("show")}
+function closeSidebarOnMobile(){if(window.innerWidth<=768){document.querySelector(".sidebar").classList.remove("open");document.getElementById("overlay").classList.remove("show")}}
+function toggleMenu(menuId){const menu=document.getElementById(menuId);if(!menu)return;const display=window.getComputedStyle(menu).display;menu.style.display=display==="none"?"block":"none"}
+
+function showSection(sectionId,button){
+document.querySelectorAll(".section").forEach(section=>section.classList.remove("active"));
+const section=document.getElementById(sectionId);if(section)section.classList.add("active");
+document.querySelectorAll(".menu button,.submenu button").forEach(btn=>btn.classList.remove("active"));
+if(button)button.classList.add("active");
+closeSidebarOnMobile();
+}
+
+function showIncome(category,button){showSection(getId(category)+"IncomeSection",button)}
+function showExpense(category,button){showSection(getId(category)+"ExpenseSection",button)}
+
+function createIncomeSections(){
+const container=document.getElementById("incomeSections");
+incomeCategories.forEach(category=>{
+const id=getId(category);
+const isSameDay=category==="Same Day";
+container.innerHTML+=`
+<section id="${id}IncomeSection" class="section">
+<h2>${category}</h2>
+<table>
+<thead><tr><th>Description</th><th>Amount</th>${isSameDay?"<th>Payment Method</th>":""}<th>Total</th><th>Action</th></tr></thead>
+<tbody id="${id}IncomeItems"></tbody>
+</table>
+<button class="btn" onclick="addIncomeItem('${id}')">Add Income Item</button>
+<div class="total-box">Total ${category}: <span id="${id}IncomeTotal">₱0.00</span></div>
+</section>`;
+});
+}
+
+function createExpenseSections(){
+const container=document.getElementById("expenseSections");
+expenseCategories.forEach(category=>{
+const id=getId(category);
+const isQty=qtyExpenseCategories.includes(category);
+container.innerHTML+=`
+<section id="${id}ExpenseSection" class="section">
+<h2>${category}</h2>
+<table>
+<thead><tr><th>Description</th>${isQty?"<th>Qty</th><th>Cost / Amount</th>":"<th>Cost / Amount</th>"}<th>Payment Method</th><th>Total</th><th>Action</th></tr></thead>
+<tbody id="${id}ExpenseItems"></tbody>
+</table>
+<button class="btn" onclick="addExpenseItem('${id}','${isQty}')">Add Expense Item</button>
+<div class="total-box">Total ${category}: <span id="${id}ExpenseTotal">₱0.00</span></div>
+</section>`;
+});
+}
+
+function paymentInput(){return `<input list="paymentMethods" class="payment" placeholder="Cash / GCash / Bank Transfer" oninput="handleDataChange()">`}
+
+function addIncomeItem(categoryId,skipSave=false){
+const table=document.getElementById(categoryId+"IncomeItems");
+const row=document.createElement("tr");
+const isSameDay=isSameDayCategoryId(categoryId);
+row.innerHTML=`
+<td><input type="text" class="description" placeholder="Description" oninput="handleDataChange()"></td>
+<td><input type="number" class="amount" value="0" oninput="handleDataChange()"></td>
+${isSameDay?`<td>${paymentInput()}</td>`:""}
+<td class="subtotal">₱0.00</td>
+<td><button class="btn btn-red" onclick="removeItem(this)">Remove</button></td>`;
+table.appendChild(row);
+calculate();
+if(!skipSave)autoSaveData();
+}
+
+function addExpenseItem(categoryId,isQty,skipSave=false){
+const table=document.getElementById(categoryId+"ExpenseItems");
+const row=document.createElement("tr");
+if(isQty==="true"){
+row.innerHTML=`
+<td><input type="text" class="description" placeholder="Description" oninput="handleDataChange()"></td>
+<td><input type="number" class="qty" value="0" oninput="handleDataChange()"></td>
+<td><input type="number" class="price" value="0" oninput="handleDataChange()"></td>
+<td>${paymentInput()}</td>
+<td class="subtotal">₱0.00</td>
+<td><button class="btn btn-red" onclick="removeItem(this)">Remove</button></td>`;
+}else{
+row.innerHTML=`
+<td><input type="text" class="description" placeholder="Description" oninput="handleDataChange()"></td>
+<td><input type="number" class="amount" value="0" oninput="handleDataChange()"></td>
+<td>${paymentInput()}</td>
+<td class="subtotal">₱0.00</td>
+<td><button class="btn btn-red" onclick="removeItem(this)">Remove</button></td>`;
+}
+table.appendChild(row);
+calculate();
+if(!skipSave)autoSaveData();
+}
+
+function removeItem(button){button.closest("tr").remove();handleDataChange()}
+function handleDataChange(){calculate();searchItems();if(!isLoadingData)autoSaveData()}
+
+function getSimpleTableTotal(tableId,totalId){
+const rows=document.querySelectorAll(`#${tableId} tr`);
+let total=0;
+rows.forEach(row=>{
+const amount=Number(row.querySelector(".amount")?.value)||0;
+const subtotal=row.querySelector(".subtotal");
+if(subtotal)subtotal.innerText=formatPeso(amount);
+total+=amount;
+});
+const totalElement=document.getElementById(totalId);
+if(totalElement)totalElement.innerText=formatPeso(total);
+return total;
+}
+
+function getQtyTableTotal(tableId,totalId){
+const rows=document.querySelectorAll(`#${tableId} tr`);
+let total=0;
+rows.forEach(row=>{
+const qty=Number(row.querySelector(".qty")?.value)||0;
+const price=Number(row.querySelector(".price")?.value)||0;
+const subtotal=qty*price;
+const subtotalElement=row.querySelector(".subtotal");
+if(subtotalElement)subtotalElement.innerText=formatPeso(subtotal);
+total+=subtotal;
+});
+const totalElement=document.getElementById(totalId);
+if(totalElement)totalElement.innerText=formatPeso(total);
+return total;
+}
+
+function updateExpenseCards(totals){
+document.getElementById("stocksCard").innerText=formatPeso(totals["Stocks Expenses"]||0);
+document.getElementById("logisticsCard").innerText=formatPeso(totals["Logistics Expenses"]||0);
+document.getElementById("miscCard").innerText=formatPeso(totals["Miscellaneous"]||0);
+document.getElementById("personalCard").innerText=formatPeso(totals["Personal"]||0);
+document.getElementById("wagesCard").innerText=formatPeso(totals["Wages"]||0);
+document.getElementById("loansCard").innerText=formatPeso(totals["Loans"]||0);
+document.getElementById("taxesCard").innerText=formatPeso(totals["Taxes"]||0);
+document.getElementById("givingCard").innerText=formatPeso(totals["Giving"]||0);
+}
+
+function calculate(){
+let totalIncome=0,totalExpenses=0,expenseTotals={};
+incomeCategories.forEach(category=>{const id=getId(category);totalIncome+=getSimpleTableTotal(id+"IncomeItems",id+"IncomeTotal")});
+expenseCategories.forEach(category=>{
+const id=getId(category);
+const categoryTotal=qtyExpenseCategories.includes(category)?getQtyTableTotal(id+"ExpenseItems",id+"ExpenseTotal"):getSimpleTableTotal(id+"ExpenseItems",id+"ExpenseTotal");
+expenseTotals[category]=categoryTotal;
+totalExpenses+=categoryTotal;
+});
+const revenue=totalIncome-totalExpenses;
+document.getElementById("totalIncome").innerText=formatPeso(totalIncome);
+document.getElementById("totalExpenses").innerText=formatPeso(totalExpenses);
+document.getElementById("revenue").innerText=formatPeso(revenue);
+updateExpenseCards(expenseTotals);
+return{income:totalIncome,expenses:totalExpenses,revenue:revenue,expenseTotals:expenseTotals};
+}
+
+function autoSaveData(){
+const data={recordDate:document.getElementById("recordDate")?.value||"",income:{},expenses:{}};
+incomeCategories.forEach(category=>{
+const id=getId(category);
+data.income[category]=[];
+document.querySelectorAll(`#${id}IncomeItems tr`).forEach(row=>{
+data.income[category].push({
+description:row.querySelector(".description")?.value||"",
+amount:row.querySelector(".amount")?.value||"0",
+payment:row.querySelector(".payment")?.value||""
+});
+});
+});
+expenseCategories.forEach(category=>{
+const id=getId(category);
+const isQty=qtyExpenseCategories.includes(category);
+data.expenses[category]=[];
+document.querySelectorAll(`#${id}ExpenseItems tr`).forEach(row=>{
+if(isQty){
+data.expenses[category].push({description:row.querySelector(".description")?.value||"",qty:row.querySelector(".qty")?.value||"0",price:row.querySelector(".price")?.value||"0",payment:row.querySelector(".payment")?.value||""});
+}else{
+data.expenses[category].push({description:row.querySelector(".description")?.value||"",amount:row.querySelector(".amount")?.value||"0",payment:row.querySelector(".payment")?.value||""});
+}
+});
+});
+localStorage.setItem("cashflowAutoSave",JSON.stringify(data));
+}
+
+function loadAutoSavedData(){
+const saved=JSON.parse(localStorage.getItem("cashflowAutoSave")||"null");
+if(!saved)return false;
+isLoadingData=true;
+
+document.getElementById("recordDate").value=saved.recordDate||"";
+
+incomeCategories.forEach(category=>{
+const id=getId(category);
+const table=document.getElementById(id+"IncomeItems");
+table.innerHTML="";
+const items=saved.income?.[category]||[];
+if(items.length===0){addIncomeItem(id,true)}else{
+items.forEach(item=>{
+addIncomeItem(id,true);
+const row=table.lastElementChild;
+row.querySelector(".description").value=item.description||"";
+row.querySelector(".amount").value=item.amount||"0";
+if(row.querySelector(".payment"))row.querySelector(".payment").value=item.payment||"";
+});
+}
+});
+
+expenseCategories.forEach(category=>{
+const id=getId(category);
+const isQty=qtyExpenseCategories.includes(category);
+const table=document.getElementById(id+"ExpenseItems");
+table.innerHTML="";
+const items=saved.expenses?.[category]||[];
+if(items.length===0){addExpenseItem(id,isQty?"true":"false",true)}else{
+items.forEach(item=>{
+addExpenseItem(id,isQty?"true":"false",true);
+const row=table.lastElementChild;
+row.querySelector(".description").value=item.description||"";
+if(isQty){row.querySelector(".qty").value=item.qty||"0";row.querySelector(".price").value=item.price||"0"}else{row.querySelector(".amount").value=item.amount||"0"}
+row.querySelector(".payment").value=item.payment||"";
+});
+}
+});
+isLoadingData=false;
+calculate();
+return true;
+}
+
+function clearAutoSavedData(){
+if(!confirm("Clear all current auto-saved income and expense inputs?"))return;
+localStorage.removeItem("cashflowAutoSave");
+location.reload();
+}
+
+function searchItems(){
+const searchBox=document.getElementById("searchInput");
+if(!searchBox)return;
+const keyword=searchBox.value.toLowerCase();
+const box=document.getElementById("searchResults");
+if(keyword.trim()===""){box.innerHTML="";return}
+let results=`<section class="section active"><h2>Search Results</h2><table><tr><th>Type</th><th>Category</th><th>Description</th><th>Payment Method</th><th>Amount</th></tr>`;
+let found=false;
+
+incomeCategories.forEach(category=>{
+const id=getId(category);
+document.querySelectorAll(`#${id}IncomeItems tr`).forEach(row=>{
+const desc=row.querySelector(".description")?.value||"";
+const amount=Number(row.querySelector(".amount")?.value)||0;
+const payment=row.querySelector(".payment")?.value||"-";
+if(desc.toLowerCase().includes(keyword)||payment.toLowerCase().includes(keyword)){
+found=true;results+=`<tr><td>Income</td><td>${category}</td><td>${desc}</td><td>${payment}</td><td>${formatPeso(amount)}</td></tr>`;
+}
+});
+});
+
+expenseCategories.forEach(category=>{
+const id=getId(category);
+const isQty=qtyExpenseCategories.includes(category);
+document.querySelectorAll(`#${id}ExpenseItems tr`).forEach(row=>{
+const desc=row.querySelector(".description")?.value||"";
+const payment=row.querySelector(".payment")?.value||"";
+let amount=0;
+if(isQty){amount=(Number(row.querySelector(".qty")?.value)||0)*(Number(row.querySelector(".price")?.value)||0)}else{amount=Number(row.querySelector(".amount")?.value)||0}
+if(desc.toLowerCase().includes(keyword)||payment.toLowerCase().includes(keyword)){
+found=true;results+=`<tr><td>Expense</td><td>${category}</td><td>${desc}</td><td>${payment}</td><td>${formatPeso(amount)}</td></tr>`;
+}
+});
+});
+
+if(!found)results+=`<tr><td colspan="5">No results found.</td></tr>`;
+results+=`</table></section>`;
+box.innerHTML=results;
+}
+
+function saveRecord(){
+const data=calculate();
+const selectedDate=document.getElementById("recordDate").value;
+if(!selectedDate){alert("Please select an Encoding / Record Date first.");return}
+const record={date:selectedDate,income:data.income,expenses:data.expenses,revenue:data.revenue};
+const records=JSON.parse(localStorage.getItem("cashflowRecords"))||[];
+records.push(record);
+localStorage.setItem("cashflowRecords",JSON.stringify(records));
+displayRecords();
+alert("Record saved successfully.");
+}
+
+function displayRecords(){
+const records=JSON.parse(localStorage.getItem("cashflowRecords"))||[];
+const table=document.getElementById("records");
+table.innerHTML="";
+records.forEach(record=>{table.innerHTML+=`<tr><td>${record.date}</td><td>${formatPeso(record.income)}</td><td>${formatPeso(record.expenses)}</td><td>${formatPeso(record.revenue)}</td></tr>`});
+}
+
+function clearRecords(){
+if(!confirm("Clear all saved records?"))return;
+localStorage.removeItem("cashflowRecords");
+displayRecords();
+document.getElementById("reportArea").innerHTML="";
+}
+
+function generateReport(){
+const data=calculate();
+const selectedDate=document.getElementById("recordDate").value||"No date selected";
+const records=JSON.parse(localStorage.getItem("cashflowRecords"))||[];
+let report=`
+<h2>Autocrafts Cashflow Report</h2>
+<p><strong>Encoding / Record Date:</strong> ${selectedDate}</p>
+<h3>Executive Summary</h3>
+<table><tr><th>Total Income</th><th>Grand Total Expenses</th><th>Net Revenue</th></tr>
+<tr><td>${formatPeso(data.income)}</td><td>${formatPeso(data.expenses)}</td><td>${formatPeso(data.revenue)}</td></tr></table>`;
+
+report+=`<h2>Income Breakdown</h2>`;
+incomeCategories.forEach(category=>{
+const id=getId(category);
+const isSameDay=category==="Same Day";
+let categoryTotal=0;
+report+=`<h3>${category}</h3><table><tr><th>Description</th><th>Amount</th>${isSameDay?"<th>Payment Method</th>":""}</tr>`;
+document.querySelectorAll(`#${id}IncomeItems tr`).forEach(row=>{
+const desc=row.querySelector(".description")?.value||"";
+const amount=Number(row.querySelector(".amount")?.value)||0;
+const payment=row.querySelector(".payment")?.value||"";
+categoryTotal+=amount;
+report+=`<tr><td>${desc}</td><td>${formatPeso(amount)}</td>${isSameDay?`<td>${payment}</td>`:""}</tr>`;
+});
+report+=`<tr><th>Total ${category}</th><th>${formatPeso(categoryTotal)}</th>${isSameDay?"<th></th>":""}</tr></table>`;
+});
+
+report+=`<h2>Expense Breakdown</h2>`;
+expenseCategories.forEach(category=>{
+const id=getId(category);
+const isQty=qtyExpenseCategories.includes(category);
+let categoryTotal=0;
+report+=`<h3>${category}</h3>`;
+if(isQty){report+=`<table><tr><th>Description</th><th>Qty</th><th>Cost / Amount</th><th>Payment Method</th><th>Total</th></tr>`}
+else{report+=`<table><tr><th>Description</th><th>Cost / Amount</th><th>Payment Method</th><th>Total</th></tr>`}
+document.querySelectorAll(`#${id}ExpenseItems tr`).forEach(row=>{
+const desc=row.querySelector(".description")?.value||"";
+const payment=row.querySelector(".payment")?.value||"";
+if(isQty){
+const qty=Number(row.querySelector(".qty")?.value)||0;
+const price=Number(row.querySelector(".price")?.value)||0;
+const total=qty*price;
+categoryTotal+=total;
+report+=`<tr><td>${desc}</td><td>${qty}</td><td>${formatPeso(price)}</td><td>${payment}</td><td>${formatPeso(total)}</td></tr>`;
+}else{
+const amount=Number(row.querySelector(".amount")?.value)||0;
+categoryTotal+=amount;
+report+=`<tr><td>${desc}</td><td>${formatPeso(amount)}</td><td>${payment}</td><td>${formatPeso(amount)}</td></tr>`;
+}
+});
+report+=`<tr><th colspan="${isQty?4:3}">Category Total</th><th>${formatPeso(categoryTotal)}</th></tr></table>`;
+});
+
+report+=`<h2>Expense Category Totals</h2><table><tr><th>Category</th><th>Total</th></tr>`;
+expenseCategories.forEach(category=>{report+=`<tr><td>${category}</td><td>${formatPeso(data.expenseTotals[category]||0)}</td></tr>`});
+report+=`</table><h2>Saved Records</h2><table><tr><th>Date</th><th>Total Income</th><th>Grand Total Expenses</th><th>Net Revenue</th></tr>`;
+records.forEach(record=>{report+=`<tr><td>${record.date}</td><td>${formatPeso(record.income)}</td><td>${formatPeso(record.expenses)}</td><td>${formatPeso(record.revenue)}</td></tr>`});
+report+=`</table><h2>Final Totals</h2><table><tr><th>Total Income</th><th>Grand Total Expenses</th><th>Net Revenue</th></tr><tr><td>${formatPeso(data.income)}</td><td>${formatPeso(data.expenses)}</td><td>${formatPeso(data.revenue)}</td></tr></table>`;
+document.getElementById("reportArea").innerHTML=report;
+showSection("recordsSection");
+}
+
+function exportToExcel(){
+generateReport();
+const content=document.getElementById("reportArea").innerHTML;
+const file=`<html><head><meta charset="UTF-8"></head><body>${content}</body></html>`;
+const blob=new Blob([file],{type:"application/vnd.ms-excel"});
+const link=document.createElement("a");
+link.href=URL.createObjectURL(blob);
+link.download="Autocrafts_Cashflow_Report.xls";
+link.click();
+}
+
+function printReport(){
+generateReport();
+const content=document.getElementById("reportArea").innerHTML;
+const printWindow=window.open("","","width=1000,height=700");
+printWindow.document.write(`<html><head><title>Autocrafts Cashflow Report</title><style>body{font-family:Arial,sans-serif;padding:30px}table{width:100%;border-collapse:collapse;margin-top:15px;margin-bottom:20px}th,td{border:1px solid #ccc;padding:10px;text-align:center}th{background:#111;color:#f6c76b}h2,h3{color:#111}</style></head><body>${content}</body></html>`);
+printWindow.document.close();
+printWindow.focus();
+printWindow.print();
+}
+
+createIncomeSections();
+createExpenseSections();
+
+const loaded=loadAutoSavedData();
+
+if(!loaded){
+incomeCategories.forEach(category=>addIncomeItem(getId(category),true));
+expenseCategories.forEach(category=>{
+const id=getId(category);
+addExpenseItem(id,qtyExpenseCategories.includes(category)?"true":"false",true);
+});
+}
+
+displayRecords();
+calculate();
+autoSaveData();
+</script>
+</body>
+</html>
